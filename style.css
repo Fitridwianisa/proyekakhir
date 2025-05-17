@@ -1,0 +1,90 @@
+body {
+  font-family: 'Poppins', sans-serif;
+  margin: 0;
+  padding: 0;
+}
+
+.sidebar {
+  width: 200px;
+  background-color: #2c2c3a;
+  height: 100vh;
+  padding: 1rem;
+  position: fixed;
+  left: 0;
+  top: 0;
+  z-index: 100;
+}
+
+.sidebar h2 {
+  color: #fff;
+  margin-bottom: 2rem;
+}
+
+.sidebar nav a {
+  display: block;
+  color: #cbd5e1;
+  text-decoration: none;
+  margin: 1rem 0;
+  transition: color 0.3s ease;
+}
+
+.sidebar nav a:hover {
+  color: #7c3aed;
+}
+
+.main-content {
+  margin-left: 200px;
+  padding: 2rem;
+  flex: 1;
+  transition: margin-left 0.3s ease;
+}
+
+footer {
+  margin-top: 2rem;
+  text-align: center;
+  padding: 1rem;
+  background: #f3f4f6;
+}
+
+.fade {
+  opacity: 0;
+  transition: opacity 0.4s ease-in-out;
+}
+
+.fade.show {
+  opacity: 1;
+}
+
+.skip-link {
+  position: absolute;
+  top: -40px;
+  left: 220px; /* keluar dari sidebar */
+  background: #7c3aed;
+  color: white;
+  padding: 8px 16px;
+  z-index: 9999;
+  border-radius: 6px;
+  text-decoration: none;
+  transition: top 0.3s ease, opacity 0.3s ease;
+  opacity: 0;
+}
+
+.skip-link:focus {
+  top: 10px;
+  opacity: 1;
+}
+
+::view-transition-old(root),
+::view-transition-new(root) {
+  animation: fade 0.3s ease;
+}
+
+@keyframes fade {
+  from {
+    opacity: 0.7;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
