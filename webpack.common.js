@@ -1,6 +1,6 @@
-// webpack.common.js
 const path = require('path');
 const CopyWebpackPlugin = require('copy-webpack-plugin');
+const HtmlWebpackPlugin = require('html-webpack-plugin');
 
 module.exports = {
   entry: './src/main.js',
@@ -15,7 +15,12 @@ module.exports = {
         { from: 'manifest.json', to: 'manifest.json' },
         { from: 'src/style.css', to: 'style.css' },
         { from: 'service-worker.js', to: 'service-worker.js' },
+        { from: 'src/icon.png', to: 'icon.png' },
       ],
+    }),
+    new HtmlWebpackPlugin({
+      template: 'src/index.html',
+      filename: 'index.html',
     }),
   ],
   module: {
