@@ -1,13 +1,15 @@
+import { StoryDB } from '../utils/indexeddb.js';
+
 const BASE_URL = 'https://story-api.dicoding.dev/v1';
 
 export async function fetchStories() {
-  try {
-    const token = localStorage.getItem('token');
-    if (!token) {
-      alert('Silakan login terlebih dahulu.');
-      return [];
-    }
+  const token = localStorage.getItem('token');
+  if (!token) {
+    alert('Silakan login terlebih dahulu.');
+    return [];
+  }
 
+  try {
     const response = await fetch(`${BASE_URL}/stories?location=1`, {
       method: 'GET',
       headers: {
@@ -16,13 +18,35 @@ export async function fetchStories() {
     });
 
     const data = await response.json();
+    const stories = data.listStory || [];
 
-    console.log('Data cerita yang diterima:', data);
+    for (const story of stories) {
+      await StoryDB.add({
+        id: story.id,
+        name: story.name,
+        description: story.description,
+        image: story.photoUrl,
+        lat: story.lat,
+        lon: story.lon,
+        createdAt: story.createdAt,
+      });
+    }
 
-    return data.listStory || [];
+    return stories;
   } catch (error) {
-    console.error('Gagal mengambil data:', error);
-    return [];
+    console.warn('Gagal ambil dari API, fallback ke IndexedDB:', error);
+
+    const localStories = await StoryDB.getAll();
+
+    return localStories.map((story) => ({
+      id: story.id,
+      name: story.name || 'Tanpa Nama',
+      description: story.description || '',
+      photoUrl: story.image || '',
+      lat: parseFloat(story.lat),
+      lon: parseFloat(story.lon),
+      createdAt: story.createdAt || new Date().toISOString(),
+    }));
   }
 }
 
@@ -49,7 +73,6 @@ export async function uploadStory({ description, imageBlob, lat, lon }) {
   }
 }
 
-
 export async function loginUser({ email, password }) {
   try {
     const res = await fetch(`${BASE_URL}/login`, {
@@ -57,6 +80,7 @@ export async function loginUser({ email, password }) {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ email, password }),
     });
+
     const data = await res.json();
     if (res.ok) {
       localStorage.setItem('token', data.loginResult.token);
@@ -80,6 +104,7 @@ export async function registerUser({ name, email, password }) {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ name, email, password }),
     });
+
     const data = await res.json();
     if (res.ok) {
       alert('Berhasil daftar! Silakan login.');
