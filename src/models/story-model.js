@@ -1,4 +1,4 @@
-import { StoryDB } from '../utils/indexeddb.js';
+import { StoryDB, PendingDB } from '../utils/indexeddb.js';
 
 const BASE_URL = 'https://story-api.dicoding.dev/v1';
 
@@ -37,16 +37,28 @@ export async function fetchStories() {
     console.warn('Gagal ambil dari API, fallback ke IndexedDB:', error);
 
     const localStories = await StoryDB.getAll();
+    const pending = await PendingDB.getAll();
 
-    return localStories.map((story) => ({
-      id: story.id,
-      name: story.name || 'Tanpa Nama',
-      description: story.description || '',
-      photoUrl: story.image || '',
-      lat: parseFloat(story.lat),
-      lon: parseFloat(story.lon),
-      createdAt: story.createdAt || new Date().toISOString(),
-    }));
+    return [
+      ...localStories.map((story) => ({
+        id: story.id,
+        name: story.name || 'Tanpa Nama',
+        description: story.description || '',
+        photoUrl: story.image || '',
+        lat: parseFloat(story.lat),
+        lon: parseFloat(story.lon),
+        createdAt: story.createdAt || new Date().toISOString(),
+      })),
+      ...pending.map((story) => ({
+        id: `pending-${story.localId}`,
+        name: 'Offline',
+        description: story.description,
+        photoUrl: '', // Belum ada URL gambar jika offline
+        lat: parseFloat(story.lat),
+        lon: parseFloat(story.lon),
+        createdAt: story.createdAt,
+      }))
+    ];
   }
 }
 
@@ -68,10 +80,39 @@ export async function uploadStory({ description, imageBlob, lat, lon }) {
     });
     alert('Berhasil mengirim data!');
   } catch (error) {
-    console.error('Gagal mengunggah:', error);
-    alert('Gagal mengunggah data.');
+    console.warn('Offline. Simpan ke pendingStories:', error);
+    await PendingDB.add({ description, imageBlob, lat, lon, createdAt: new Date().toISOString() });
+    alert('Data disimpan offline dan akan dikirim saat online.');
   }
 }
+
+window.addEventListener('online', async () => {
+  const pending = await PendingDB.getAll();
+
+  for (const item of pending) {
+    try {
+      const formData = new FormData();
+      formData.append('description', item.description);
+      formData.append('photo', item.imageBlob);
+      formData.append('lat', item.lat);
+      formData.append('lon', item.lon);
+
+      const token = localStorage.getItem('token');
+      await fetch(`${BASE_URL}/stories`, {
+        method: 'POST',
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+        body: formData,
+      });
+
+      await PendingDB.delete(item.localId);
+      console.log('Data offline berhasil dikirim:', item);
+    } catch (err) {
+      console.warn('Gagal upload data offline:', err);
+    }
+  }
+});
 
 export async function loginUser({ email, password }) {
   try {
