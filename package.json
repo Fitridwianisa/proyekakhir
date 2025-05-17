@@ -2,11 +2,12 @@
   "name": "app-starter-project-with-webpack",
   "version": "1.0.0",
   "description": "",
-  "homepage": "https://fitridwianisa.github.io/proyek2",
+  "homepage": "https://fitridwianisa.github.io/proyekakhir2",
   "scripts": {
     "build": "webpack --config webpack.prod.js",
     "start-dev": "webpack serve --config webpack.dev.js",
-    "serve": "http-server dist"
+    "serve": "http-server dist",
+    "deploy": "npm run build && gh-pages -d dist"
   },
   "keywords": [],
   "author": "fitri <sablahnisa201@gail.com>",
