@@ -3,6 +3,7 @@ import { renderAddStory } from '../views/add-story.js';
 import { renderLogin } from '../views/login.js';
 import { renderLogout } from '../views/logout.js';
 import { renderRegister } from '../views/register.js';
+import './style.css';
 
 export const routes = {
   '#/': renderHome,

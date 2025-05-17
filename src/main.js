@@ -3,7 +3,6 @@ import { renderAddStory } from './views/add-story.js';
 import { renderLogin } from './views/login.js';
 import { renderLogout } from './views/logout.js';
 import { renderRegister } from './views/register.js';
-import './style.css'; 
 
 const routes = {
   '/': renderHome,
@@ -54,3 +53,47 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 
 window.addEventListener('hashchange', router);
+
+if ('serviceWorker' in navigator && 'PushManager' in window) {
+    navigator.serviceWorker.register('/service-worker.js')
+        .then((registration) => {
+            console.log('Service Worker registered with scope:', registration.scope);
+            return Notification.requestPermission();
+        })
+        .then((permission) => {
+            if (permission === 'granted') {
+                console.log('Notification permission granted.');
+                subscribeUserToPush(registration);
+            } else {
+                console.log('Notification permission denied.');
+            }
+        })
+        .catch((error) => {
+            console.error('Service Worker registration failed:', error);
+        });
+}
+
+function subscribeUserToPush(registration) {
+    const applicationServerKey = urlB64ToUint8Array('BCCs2eonMI-6H2ctvFaWg-UYdDv387Vno_bzUzALpB442r2lCnsHmtrx8biyPi_E-1fSGABK_Qs_GlvPoJJqxbk');
+
+    registration.pushManager.subscribe({
+    userVisibleOnly: true,
+    applicationServerKey: applicationServerKey
+    })
+    .then((subscription) => {
+        console.log('User  is subscribed:', subscription);
+    })
+    .catch((error) => {
+        console.error('Failed to subscribe the user: ', error);
+    });
+}
+
+function urlB64ToUint8Array(base64String) {
+    const padding = '='.repeat((4 - base64String.length % 4) % 4);
+    const base64 = (base64String + padding)
+        .replace(/-/g, '+')
+        .replace(/_/g, '/');
+
+    const rawData = window.atob(base64);
+    return new Uint8Array([...rawData].map(char => char.charCodeAt(0)));
+}
