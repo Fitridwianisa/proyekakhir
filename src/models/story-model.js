@@ -53,7 +53,7 @@ export async function fetchStories() {
         id: `pending-${story.localId}`,
         name: 'Offline',
         description: story.description,
-        photoUrl: '', // Belum ada URL gambar jika offline
+        photoUrl: '',
         lat: parseFloat(story.lat),
         lon: parseFloat(story.lon),
         createdAt: story.createdAt,

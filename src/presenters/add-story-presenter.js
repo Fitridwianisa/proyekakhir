@@ -1,4 +1,3 @@
-// add-story-presenter.js
 import { uploadStory } from '../models/story-model.js';
 
 export const AddStoryPresenter = () => {
